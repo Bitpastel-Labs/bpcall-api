@@ -1,15 +1,6 @@
 from datetime import datetime, timedelta, timezone
-import bcrypt as _bcrypt_module
-
-# passlib 1.7.4 expects bcrypt.__about__.__version__ which was removed in bcrypt 4+
-if not hasattr(_bcrypt_module, "__about__"):
-    import types
-    _about = types.ModuleType("bcrypt.__about__")
-    _about.__version__ = getattr(_bcrypt_module, "__version__", "4.0.0")
-    _bcrypt_module.__about__ = _about
-
+import bcrypt
 from jose import jwt, JWTError
-from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
@@ -23,16 +14,15 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_HOURS = 24
 REFRESH_TOKEN_EXPIRE_DAYS = 7
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
 
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return pwd_context.verify(plain, hashed)
+    return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
 
 
 def create_access_token(user_id: int) -> str:
