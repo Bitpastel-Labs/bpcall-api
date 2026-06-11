@@ -195,10 +195,12 @@ class ConnectionManager:
         if not room_id:
             return
 
+        sender = db.query(User).filter(User.id == sender_id).first()
+        sender_name = sender.display_name or sender.username if sender else "Someone"
         members = db.query(ChatRoomMember).filter(ChatRoomMember.room_id == room_id).all()
         out = json.dumps({
             "type": "typing",
-            "payload": {"room_id": room_id, "user_id": sender_id},
+            "payload": {"room_id": room_id, "user_id": sender_id, "user_name": sender_name},
         })
         for m in members:
             if m.user_id != sender_id:
