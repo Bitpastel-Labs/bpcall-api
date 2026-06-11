@@ -232,6 +232,12 @@ class ConnectionManager:
                 db
             )
 
+        if msg_type == "call_accept":
+            acceptor = db.query(User).filter(User.id == user_id).first()
+            if acceptor:
+                payload["from_user_name"] = acceptor.display_name or acceptor.username
+                payload["from_user_username"] = acceptor.username
+
         if msg_type == "call_end":
             call_log_id = payload.get("call_log_id")
             if call_log_id:
